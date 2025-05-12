@@ -8,35 +8,31 @@ services:
       POSTGRES_DB: taskManagerDB
     ports:
       - "5430:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
     networks:
       - app-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
 
-  app:
-    build: .
-    container_name: app
-    depends_on:
-      postgres:
-        condition: service_healthy
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
     environment:
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: taskManagerDB
-      DB_USER: postgres
-      DB_PASSWORD: postgres
+      ZOOKEEPER_CLIENT_PORT: 2181
     ports:
-      - "8080:8080"
+      - "2181:2181"
     networks:
       - app-network
 
-volumes:
-  postgres-data:
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - app-network
 
 networks:
   app-network:

@@ -4,18 +4,21 @@ import com.example.taskmanager.aspect.annotation.ExceptionHandling;
 import com.example.taskmanager.aspect.annotation.LogTime;
 import com.example.taskmanager.aspect.annotation.Loggable;
 import com.example.taskmanager.aspect.annotation.ResultHandling;
+import com.example.taskmanager.dto.TaskStatusChangeEvent;
 import com.example.taskmanager.exception.NotFoundException;
 import com.example.taskmanager.model.Task;
 import com.example.taskmanager.repository.TaskRepository;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class TaskService {
     private final TaskRepository repository;
+    private final KafkaTemplate<String, TaskStatusChangeEvent> kafkaTemplate;
 
     @Loggable
     @ExceptionHandling
@@ -64,5 +67,17 @@ public class TaskService {
         Task task = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Task with id " + id + " not found"));
         repository.delete(task);
+    }
+
+    @Loggable
+    @ExceptionHandling
+    @LogTime
+    @ResultHandling
+    public Task updateTaskStatus(UUID taskId, String newStatus) {
+        Task task = repository.findById(taskId).orElseThrow(() -> new NotFoundException("Task not found"));
+        task.setStatus(newStatus);
+        repository.save(task);
+        kafkaTemplate.send("task-status-changed", new TaskStatusChangeEvent(taskId, newStatus));
+        return task;
     }
 }
