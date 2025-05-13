@@ -16,8 +16,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ###
-    password: ###
+    username: alexdarenkov100@gmail.com
+    password: vlfz yfsd btwn wklt
     properties:
       mail:
         smtp:
@@ -32,4 +32,4 @@ logging:
 
 notification:
   email:
-    to: ###
+    to: alexdarenkov200@gmail.com
