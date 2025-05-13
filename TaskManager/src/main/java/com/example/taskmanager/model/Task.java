@@ -3,12 +3,16 @@ package com.example.taskmanager.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.UUID;
 
-@Data
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
 public class Task {
     @Id
     private UUID id;
@@ -16,4 +20,5 @@ public class Task {
     private String description;
     @JsonProperty("user_id")
     private UUID userId;
+    private String status;
 }
