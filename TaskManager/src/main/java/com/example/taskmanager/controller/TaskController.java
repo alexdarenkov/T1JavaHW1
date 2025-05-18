@@ -1,46 +1,64 @@
 package com.example.taskmanager.controller;
 
-import com.example.taskmanager.model.Task;
+import com.example.taskmanager.dto.TaskDto;
+import com.example.taskmanager.dto.TaskStatusChangeDto;
 import com.example.taskmanager.service.TaskService;
+import com.example.taskmanager.util.TaskMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("api/v1/tasks")
 public class TaskController {
     private final TaskService service;
-
-    public TaskController(TaskService service) {
-        this.service = service;
-    }
+    private final TaskMapper taskMapper;
 
     @PostMapping
-    public ResponseEntity<Task> create(@RequestBody Task task) {
-        return new ResponseEntity<>(service.createTask(task), HttpStatus.CREATED);
+    @ResponseStatus(HttpStatus.CREATED)
+    public TaskDto create(@RequestBody TaskDto taskDto) {
+        return taskMapper.toDto(
+                service.createTask(taskMapper.toEntity(taskDto))
+        );
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Task> getById(@PathVariable UUID id) {
-        return new ResponseEntity<>(service.getTaskById(id), HttpStatus.OK);
+    public TaskDto getById(@PathVariable Long id) {
+        return taskMapper.toDto(
+                service.getTaskById(id)
+        );
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Task> update(@PathVariable UUID id, @RequestBody Task task) {
-        return new ResponseEntity<>(service.updateTask(id, task), HttpStatus.OK);
+    public TaskDto update(@PathVariable Long id, @RequestBody TaskDto taskDto) {
+        return taskMapper.toDto(
+                service.updateTask(id, taskMapper.toEntity(taskDto))
+        );
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
         service.deleteTask(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping
-    public ResponseEntity<List<Task>> getAll() {
-        return new ResponseEntity<>(service.getAllTasks(), HttpStatus.OK);
+    public List<TaskDto> getAll() {
+        return taskMapper.toDtoList(
+                service.getAllTasks()
+        );
+    }
+
+    @PatchMapping("/status")
+    public TaskDto updateStatus(@RequestBody TaskStatusChangeDto taskStatusChangeDto) {
+        return taskMapper.toDto(
+                service.updateTaskStatus(
+                        taskStatusChangeDto.getTaskId(),
+                        taskStatusChangeDto.getStatus()
+                )
+        );
     }
 }

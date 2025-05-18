@@ -1,24 +1,20 @@
-package com.example.taskmanager.model;
+package com.example.taskmanager.dto;
 
+import com.example.taskmanager.model.TaskStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.*;
 import lombok.*;
 
+
 @Builder
-@Entity
 @Getter
 @Setter
-@Table(name = "task")
 @NoArgsConstructor
 @AllArgsConstructor
-public class Task {
-    @Id
+public class TaskDto {
     private Long id;
     private String title;
     private String description;
     @JsonProperty("user_id")
     private Long userId;
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
     private TaskStatus status;
 }
