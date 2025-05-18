@@ -4,15 +4,15 @@ import com.example.taskmanager.aspect.annotation.ExceptionHandling;
 import com.example.taskmanager.aspect.annotation.LogTime;
 import com.example.taskmanager.aspect.annotation.Loggable;
 import com.example.taskmanager.aspect.annotation.ResultHandling;
-import com.example.taskmanager.dto.TaskStatusChangeDTO;
+import com.example.taskmanager.dto.TaskStatusChangeDto;
 import com.example.taskmanager.exception.NotFoundException;
 import com.example.taskmanager.kafka.KafkaProducerService;
 import com.example.taskmanager.model.Task;
+import com.example.taskmanager.model.TaskStatus;
 import com.example.taskmanager.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +40,7 @@ public class TaskService {
     @ExceptionHandling
     @LogTime
     @ResultHandling
-    public Task getTaskById(UUID id) {
+    public Task getTaskById(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Task with id " + id + " not found"));
     }
@@ -49,13 +49,22 @@ public class TaskService {
     @ExceptionHandling
     @LogTime
     @ResultHandling
-    public Task updateTask(UUID id, Task newTask) {
+    public Task updateTask(Long id, Task newTask) {
         Task oldTask = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Task with id " + id + " not found"));
+        TaskStatus oldStatus = oldTask.getStatus();
         oldTask.setId(newTask.getId());
-        oldTask.setTitle(newTask.getDescription());
+        oldTask.setTitle(newTask.getTitle());
         oldTask.setDescription(newTask.getDescription());
         oldTask.setUserId(newTask.getUserId());
+
+        if (oldStatus != newTask.getStatus()) {
+            kafkaProducerService.sendMessage(
+                    new TaskStatusChangeDto(id, newTask.getStatus())
+            );
+            oldTask.setStatus(newTask.getStatus());
+        }
+
         return repository.save(oldTask);
     }
 
@@ -63,7 +72,7 @@ public class TaskService {
     @ExceptionHandling
     @LogTime
     @ResultHandling
-    public void deleteTask(UUID id) {
+    public void deleteTask(Long id) {
         Task task = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Task with id " + id + " not found"));
         repository.delete(task);
@@ -73,11 +82,18 @@ public class TaskService {
     @ExceptionHandling
     @LogTime
     @ResultHandling
-    public Task updateTaskStatus(UUID taskId, String newStatus) {
-        Task task = repository.findById(taskId).orElseThrow(() -> new NotFoundException("Task not found"));
-        task.setStatus(newStatus);
-        repository.save(task);
-        kafkaProducerService.sendMessage(new TaskStatusChangeDTO(taskId, newStatus));
+    public Task updateTaskStatus(Long taskId, TaskStatus newStatus) {
+        Task task = repository.findById(taskId)
+                .orElseThrow(() -> new NotFoundException("Task not found"));
+
+        if (task.getStatus() != newStatus) {
+            task.setStatus(newStatus);
+            repository.save(task);
+            kafkaProducerService.sendMessage(
+                    new TaskStatusChangeDto(taskId, newStatus)
+            );
+        }
+
         return task;
     }
 }

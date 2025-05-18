@@ -27,3 +27,17 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  kafka-topics:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - kafka
+    command: >
+      bash -c 
+      "
+      sleep 10;
+      kafka-topics --create --if-not-exists --topic task-status-changed 
+                   --partitions 1 --replication-factor 1 
+                   --bootstrap-server kafka:9092;
+      "
+    restart: on-failure

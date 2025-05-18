@@ -2,6 +2,7 @@ spring:
   application:
     name: TaskManager
   datasource:
+    driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5430/taskManagerDB
     username: postgres
     password: postgres
@@ -16,8 +17,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: alexdarenkov100@gmail.com
-    password: vlfz yfsd btwn wklt
+    username: ###
+    password: ###
     properties:
       mail:
         smtp:
@@ -32,4 +33,10 @@ logging:
 
 notification:
   email:
-    to: alexdarenkov200@gmail.com
+    to: ###
+
+app:
+  kafka:
+    topic:
+      task-status-changed: "task-status-changed"
+    group-id: "group_id"

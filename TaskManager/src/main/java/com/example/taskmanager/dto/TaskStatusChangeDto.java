@@ -1,15 +1,14 @@
 package com.example.taskmanager.dto;
 
+import com.example.taskmanager.model.TaskStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TaskStatusChangeDTO {
-    private UUID taskId;
-    private String newStatus;
+public class TaskStatusChangeDto {
+    private Long taskId;
+    private TaskStatus status;
 }

@@ -1,53 +1,64 @@
 package com.example.taskmanager.controller;
 
-import com.example.taskmanager.model.Task;
+import com.example.taskmanager.dto.TaskDto;
+import com.example.taskmanager.dto.TaskStatusChangeDto;
 import com.example.taskmanager.service.TaskService;
+import com.example.taskmanager.util.TaskMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("api/v1/tasks")
 public class TaskController {
     private final TaskService service;
-
-    public TaskController(TaskService service) {
-        this.service = service;
-    }
+    private final TaskMapper taskMapper;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Task create(@RequestBody Task task) {
-        return service.createTask(task);
+    public TaskDto create(@RequestBody TaskDto taskDto) {
+        return taskMapper.toDto(
+                service.createTask(taskMapper.toEntity(taskDto))
+        );
     }
 
     @GetMapping("/{id}")
-    public Task getById(@PathVariable UUID id) {
-        return service.getTaskById(id);
+    public TaskDto getById(@PathVariable Long id) {
+        return taskMapper.toDto(
+                service.getTaskById(id)
+        );
     }
 
     @PutMapping("/{id}")
-    public Task update(@PathVariable UUID id, @RequestBody Task task) {
-        return service.updateTask(id, task);
+    public TaskDto update(@PathVariable Long id, @RequestBody TaskDto taskDto) {
+        return taskMapper.toDto(
+                service.updateTask(id, taskMapper.toEntity(taskDto))
+        );
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID id) {
+    public void delete(@PathVariable Long id) {
         service.deleteTask(id);
     }
 
     @GetMapping
-    public List<Task> getAll() {
-        return service.getAllTasks();
+    public List<TaskDto> getAll() {
+        return taskMapper.toDtoList(
+                service.getAllTasks()
+        );
     }
 
-    @PatchMapping("/{id}/status")
-    public Task updateStatus(@PathVariable UUID id, @RequestBody Map<String, String> statusUpdate) {
-        String newStatus = statusUpdate.get("status");
-        return service.updateTaskStatus(id, newStatus);
+    @PatchMapping("/status")
+    public TaskDto updateStatus(@RequestBody TaskStatusChangeDto taskStatusChangeDto) {
+        return taskMapper.toDto(
+                service.updateTaskStatus(
+                        taskStatusChangeDto.getTaskId(),
+                        taskStatusChangeDto.getStatus()
+                )
+        );
     }
 }

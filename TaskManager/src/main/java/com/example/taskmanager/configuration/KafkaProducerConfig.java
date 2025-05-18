@@ -1,6 +1,6 @@
 package com.example.taskmanager.configuration;
 
-import com.example.taskmanager.dto.TaskStatusChangeDTO;
+import com.example.taskmanager.dto.TaskStatusChangeDto;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +20,7 @@ public class KafkaProducerConfig {
     private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, TaskStatusChangeDTO> producerFactory() {
+    public ProducerFactory<String, TaskStatusChangeDto> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -28,7 +28,7 @@ public class KafkaProducerConfig {
         return new DefaultKafkaProducerFactory<>(configProps);
     }
     @Bean
-    public KafkaTemplate<String, TaskStatusChangeDTO> kafkaTemplate() {
+    public KafkaTemplate<String, TaskStatusChangeDto> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 }
