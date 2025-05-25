@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: TaskManager
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5430/taskManagerDB
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  kafka:
+    bootstrap-servers: localhost:9092
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ###
+    password: ###
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+logging:
+  level:
+    root: INFO
+    com.example.taskmanager.aspect: INFO
+
+notification:
+  email:
+    to: ###
+
+app:
+  kafka:
+    topic:
+      task-status-changed: "task-status-changed"
+    group-id: "group_id"
